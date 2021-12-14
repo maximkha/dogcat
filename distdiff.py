@@ -61,9 +61,11 @@ b_sample = torch.Tensor(b_sample).to(device)
 import matplotlib.pyplot as plt
 plt.scatter(*(a_sample.cpu().T), alpha=.5)
 plt.scatter(*(b_sample.cpu().T), alpha=.5)
-plt.show()
 
 affine_bijector = nn.Linear(2, 2, False).to(device) # affine
+
+print(f"{list(affine_bijector.parameters())[0].det()=}")
+plt.show()
 
 # plt.scatter(*(a_sample.T), alpha=.5)
 # plt.scatter(*(affine_bijector(a_sample).detach().T.numpy()), alpha=.5)
