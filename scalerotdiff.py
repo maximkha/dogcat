@@ -4,7 +4,8 @@ import numpy as np
 
 # nice functions
 def avgdist(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
-    return torch.mean(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0])
+    # return torch.mean(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0])
+    return torch.mean(torch.sqrt(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0]))
 
 def rotate_scale(xypairs: torch.Tensor, theta, scale) -> torch.Tensor:
     xypairs_rotated = torch.zeros_like(xypairs)

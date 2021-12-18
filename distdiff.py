@@ -17,7 +17,7 @@ def avgdist(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
     # return torch.mean(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0])
     # same as above
 
-    return torch.mean(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0])
+    return torch.mean(torch.sqrt(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0]))
 
     # return torch.max(torch.min(torch.sum((A.repeat(B.shape[0], 1).view(B.shape[0], A.shape[0], B.shape[1]) -  B.view(B.shape[0], 1, B.shape[1]))**2, dim=2), dim=1)[0])
     # same as above
@@ -29,21 +29,21 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 import sklearn.datasets
 
-# a_dist = torch.distributions.normal.Normal(torch.tensor([0.0, 0.0]), torch.tensor([.1, .1]))
-# a_sample = a_dist.sample((500,)).to(device)
-a_sample = sklearn.datasets.make_s_curve(n_samples=1000, noise=0.125, random_state=None)[0][:, [0, 2]]
-# print(a_sample)
-a_sample = torch.Tensor(a_sample).to(device)
+a_dist = torch.distributions.normal.Normal(torch.tensor([0.0, 0.0]), torch.tensor([7., 7.]))
+a_sample = a_dist.sample((1000,)).to(device)
+# a_sample = sklearn.datasets.make_s_curve(n_samples=1000, noise=0.125, random_state=None)[0][:, [0, 2]]
+# # print(a_sample)
+# a_sample = torch.Tensor(a_sample).to(device)
 
 # b_dist = torch.distributions.normal.Normal(torch.tensor([-1., 2.]), torch.tensor([4.0, 5.0]))
 # b_dist = torch.distributions.normal.Normal(torch.tensor([-.1, 0.5]), torch.tensor([0.25, 0.1]))
 # b_sample = a_sample.detach() * 2 + 1 # b_dist.sample((500,))
-# b_dist = torch.distributions.normal.Normal(torch.tensor([-1., 2.]), torch.tensor([4.0, 5.0]))
-# b_sample = b_dist.sample((500,)).to(device)
+b_dist = torch.distributions.normal.Normal(torch.tensor([-1., 2.]), torch.tensor([4.0, 5.0]))
+b_sample = b_dist.sample((1000,)).to(device)
 
-b_sample = sklearn.datasets.make_s_curve(n_samples=1000, noise=0.125, random_state=None)[0][:, [0, 2]]
-# print(a_sample)
-b_sample = torch.Tensor(b_sample).to(device)
+# b_sample = sklearn.datasets.make_s_curve(n_samples=1000, noise=0.125, random_state=None)[0][:, [0, 2]]
+# # print(a_sample)
+# b_sample = torch.Tensor(b_sample).to(device)
 
 # random theta
 # rotation = torch.rand(1)[0]*3.14*2
@@ -61,9 +61,8 @@ b_sample = torch.Tensor(b_sample).to(device)
 import matplotlib.pyplot as plt
 plt.scatter(*(a_sample.cpu().T), alpha=.5)
 plt.scatter(*(b_sample.cpu().T), alpha=.5)
-plt.show()
 
-affine_bijector = nn.Linear(2, 2, False).to(device) # affine
+affine_bijector = nn.Linear(2, 2, True).to(device) # affine
 
 # plt.scatter(*(a_sample.T), alpha=.5)
 # plt.scatter(*(affine_bijector(a_sample).detach().T.numpy()), alpha=.5)
@@ -75,14 +74,19 @@ affine_bijector = nn.Linear(2, 2, False).to(device) # affine
 
 # optimizer = optim.Adagrad(affine_bijector.parameters(), lr=0.01)
 # optimizer = optim.SGD(affine_bijector.parameters(), lr=0.01, momentum=.1)
-optimizer = optim.Adam(affine_bijector.parameters(), lr=0.01)
-# optimizer = optim.Adadelta(affine_bijector.parameters())
+# optimizer = optim.Adam(affine_bijector.parameters(), lr=0.01)
+optimizer = optim.Adadelta(affine_bijector.parameters())
+
+# if list(affine_bijector.parameters())[0].det() < 0: we don't converge to the correct solution.
+
+print(f"{list(affine_bijector.parameters())[0].det()=}")
+plt.show()
 
 lossf = avgdist # nn.MSELoss() # avgdist
 
 b_size = floor(a_sample.shape[0]*1)
 
-for epoch in range(500):
+for epoch in range(5000):
     optimizer.zero_grad()
 
     outputs = affine_bijector(a_sample[torch.randperm(a_sample.shape[0])[:b_size]])
