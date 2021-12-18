@@ -64,6 +64,9 @@ plt.scatter(*(b_sample.cpu().T), alpha=.5)
 
 affine_bijector = nn.Linear(2, 2, True).to(device) # affine
 
+print(f"{list(affine_bijector.parameters())[0].det()=}")
+plt.show()
+
 # plt.scatter(*(a_sample.T), alpha=.5)
 # plt.scatter(*(affine_bijector(a_sample).detach().T.numpy()), alpha=.5)
 # plt.show()

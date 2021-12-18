@@ -18,10 +18,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # create fake data
 import sklearn.datasets
 
-a_sample = sklearn.datasets.make_s_curve(n_samples=400, noise=0.25, random_state=None)[0][:, [0, 2]]
+a_sample = sklearn.datasets.make_s_curve(n_samples=250, noise=0.25, random_state=None)[0][:, [0, 2]]
 a_sample = torch.Tensor(a_sample).to(device)
 
-b_sample = sklearn.datasets.make_s_curve(n_samples=400, noise=0.25, random_state=None)[0][:, [0, 2]]
+b_sample = sklearn.datasets.make_s_curve(n_samples=250, noise=0.25, random_state=None)[0][:, [0, 2]]
 b_sample = torch.Tensor(b_sample).to(device)
 
 true_mu = (torch.rand(1)[0] * 2) -1
@@ -31,8 +31,8 @@ b_sample_transformed = rotate_scale(b_sample, true_theta, true_mu)
 
 # sample loss as a function of anlge (theta) and scale (mu)
 
-test_mus = torch.linspace(-1, 1, steps=100).to(device)
-test_thetas = torch.linspace(0, 1 * np.pi, steps=100).to(device)
+test_mus = torch.linspace(-1, 1, steps=50).to(device)
+test_thetas = torch.linspace(0, 1 * np.pi, steps=50).to(device)
 
 surf_mu = []
 surf_theta = []
